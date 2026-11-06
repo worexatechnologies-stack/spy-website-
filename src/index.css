@@ -1,0 +1,71 @@
+@import "tailwindcss";
+@import "lenis/dist/lenis.css";
+
+@theme {
+  --color-primary: #0B0B0B;
+  --color-dark-brown: #2B1E16;
+  --color-accent: #D4AF37;
+  --color-light: #F8F6F2;
+  --color-logo-black: #0B0B0B;
+  --color-logo-gold: #D4AF37;
+  --color-jet: #111111;
+  --font-display: "Playfair Display", Georgia, serif;
+  --font-cinzel: "Cinzel", Georgia, serif;
+  --font-merriweather: "Merriweather", Georgia, serif;
+  --font-body: "Inter", system-ui, sans-serif;
+  --font-poppins: "Poppins", system-ui, sans-serif;
+}
+
+body {
+  font-family: var(--font-body);
+  color: var(--color-jet);
+  background-color: #ffffff;
+  -webkit-font-smoothing: antialiased;
+}
+
+.font-display {
+  font-family: var(--font-display);
+}
+
+.font-cinzel {
+  font-family: var(--font-cinzel);
+}
+
+.font-merriweather {
+  font-family: var(--font-merriweather);
+}
+
+.font-poppins {
+  font-family: var(--font-poppins);
+}
+
+.glass {
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+}
+
+.glass-dark {
+  background: rgba(59, 37, 20, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(139, 94, 60, 0.3);
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #F8F6F2;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #D4AF37;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #2B1E16;
+}

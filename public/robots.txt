@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://spysense.in/sitemap.xml
+Sitemap: https://spysense.in/blogs.xml
