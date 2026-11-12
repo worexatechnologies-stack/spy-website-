@@ -1,5 +1,5 @@
 import { useParams, Link } from 'react-router-dom';
-import { useState, FormEvent } from 'react';
+import { useMemo, useRef, useState, type FormEvent } from 'react';
 import { motion } from 'framer-motion';
 import { Calendar, User, ArrowLeft, ArrowRight, Clock, Tag, ChevronDown, CheckCircle } from 'lucide-react';
 import PageHero from '../components/ui/PageHero';
@@ -226,30 +226,27 @@ export default function ArticleDetail() {
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(null);
 
   // Quick Contact form state
-  const [qcName, setQcName] = useState('');
-  const [qcPhone, setQcPhone] = useState('');
-  const [qcEmail, setQcEmail] = useState('');
+  const quickContactFormRef = useRef<HTMLFormElement>(null);
   const [qcSending, setQcSending] = useState(false);
   const [qcSent, setQcSent] = useState(false);
   const [qcError, setQcError] = useState('');
 
-  const handleQuickContact = async (e: FormEvent) => {
+  const handleQuickContact = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    const formData = new FormData(e.currentTarget);
     setQcSending(true);
     setQcError('');
     try {
       await sendEmail({
-        from_name:  qcName,
-        from_email: qcEmail || 'Not provided',
-        phone:      qcPhone || 'Not provided',
+        from_name:  String(formData.get('name') ?? ''),
+        from_email: String(formData.get('email') ?? '') || 'Not provided',
+        phone:      String(formData.get('phone') ?? '') || 'Not provided',
         message:    `Quick contact enquiry from article: "${post?.title || 'Unknown article'}".`,
         service:    'General Inquiry',
         location:   '',
       });
       setQcSent(true);
-      setQcName('');
-      setQcPhone('');
-      setQcEmail('');
+      quickContactFormRef.current?.reset();
       setTimeout(() => setQcSent(false), 5000);
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err);
@@ -260,6 +257,22 @@ export default function ArticleDetail() {
   };
 
   const post = blogs.find((b) => b.slug === slug);
+  const articleContent = useMemo(
+    () => parseArticleContent(post?.content ?? ''),
+    [post]
+  );
+  const related = useMemo(
+    () => blogs.filter((b) => b.category === post?.category && b.id !== post?.id).slice(0, 3),
+    [blogs, post]
+  );
+  const recent = useMemo(
+    () => blogs.filter((b) => b.id !== post?.id).slice(0, 4),
+    [blogs, post]
+  );
+  const readTime = useMemo(
+    () => getReadTime(post?.content ?? ''),
+    [post]
+  );
 
   if (!post) {
     return (
@@ -272,17 +285,10 @@ export default function ArticleDetail() {
     );
   }
 
-  const related = blogs
-    .filter((b) => b.category === post.category && b.id !== post.id)
-    .slice(0, 3);
-
-  const recent = blogs.filter((b) => b.id !== post.id).slice(0, 4);
-  const readTime = getReadTime(post.content);
-
   return (
     <>
       {post.metaTitle && (
-        <head>
+        <>
           <title id="metaTitle">{post.metaTitle}</title>
           {post.metaDescription && <meta name="description" id="metaDescription" content={post.metaDescription} />}
           {post.metaKeywords && <meta name="keywords" id="metaKeywords" content={post.metaKeywords} />}
@@ -300,12 +306,12 @@ export default function ArticleDetail() {
           {post.indexingStatus && <meta id="indexingStatus" name="robots" content={post.indexingStatus} />}
           {post.Publisher && <meta id="Publisher" property="publisher" content={post.Publisher} />}
           {post.ogLocale && <meta property="og:locale" content={post.ogLocale} />}
-        </head>
+        </>
       )}
 
       <PageHero title={post.title} breadcrumb={`Home / Articles / ${post.category}`} image={post.image} />
 
-      <section className="py-16 md:py-24 bg-[#F8F9FA]">
+      <section className="py-8 sm:py-12 lg:py-20 bg-[#F8F9FA]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Back Link */}
           <Link
@@ -318,17 +324,16 @@ export default function ArticleDetail() {
             Back to Articles
           </Link>
 
-          <div className="grid lg:grid-cols-3 gap-10">
+          <div className="grid lg:grid-cols-3 gap-6 lg:gap-10">
             {/* Main Article */}
             <article className="lg:col-span-2">
-              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-
                 {/* Hero Image */}
-                <div className="rounded-2xl overflow-hidden mb-8 shadow-md border border-black/6 bg-[#F4F4F4] flex justify-center">
+                <div className="rounded-2xl overflow-hidden mb-6 sm:mb-8 shadow-md border border-black/6 bg-[#F4F4F4] flex justify-center">
                   <img
                     src={post.image}
                     alt={post.title}
                     className="w-full h-auto max-h-[500px] object-contain"
+                    decoding="async"
                   />
                 </div>
 
@@ -356,9 +361,9 @@ export default function ArticleDetail() {
                 </div>
 
                 {/* Article Body */}
-                <div className="bg-white rounded-2xl p-8 md:p-10 shadow-sm border border-black/6 mb-8">
+                <div className="article-content bg-white rounded-2xl p-5 sm:p-8 lg:p-10 shadow-sm border border-black/6 mb-8">
                   {(() => {
-                    const { blocks, faqs } = parseArticleContent(post.content);
+                    const { blocks, faqs } = articleContent;
                     
                     return (
                       <>
@@ -374,7 +379,7 @@ export default function ArticleDetail() {
                                 </h4>
                                 <ul className="grid sm:grid-cols-2 gap-x-6 gap-y-2">
                                   {block.items.map((item, idx) => (
-                                    <li key={idx} className="flex items-center gap-2 text-xs font-poppins text-jet/70 hover:text-logo-gold transition-colors">
+                                    <li key={idx} className="flex items-start gap-2 text-sm font-poppins text-jet/70 hover:text-logo-gold transition-colors">
                                       <span className="w-1.5 h-1.5 rounded-full bg-logo-gold/60" />
                                       <a href={`#${item.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`} className="underline decoration-black/5 hover:decoration-logo-gold transition-colors">
                                         {item}
@@ -392,10 +397,10 @@ export default function ArticleDetail() {
                               <h3 
                                 key={i} 
                                 id={headingId} 
-                                className="font-display font-bold text-xl md:text-2xl text-jet mb-4 mt-8 flex items-center gap-3 scroll-mt-28"
+                                className="font-display font-bold text-lg sm:text-xl md:text-2xl text-jet mb-4 mt-8 flex items-start gap-3 scroll-mt-28"
                               >
-                                <span className="w-1.5 h-6 bg-logo-gold rounded-full inline-block shrink-0"></span>
-                                {block.text}
+                                <span className="w-1.5 h-6 bg-logo-gold rounded-full inline-block shrink-0 mt-1"></span>
+                                <span className="min-w-0 break-words">{block.text}</span>
                               </h3>
                             );
                           }
@@ -404,7 +409,7 @@ export default function ArticleDetail() {
                             return (
                               <ul key={i} className="space-y-3 my-5 pl-1">
                                 {block.items.map((item, idx) => (
-                                  <li key={idx} className="flex items-start gap-3 text-sm md:text-base text-jet/70 leading-relaxed font-body">
+                                  <li key={idx} className="flex items-start gap-3 text-base text-jet/70 leading-relaxed font-body">
                                     <span className="mt-2 w-1.5 h-1.5 rounded-full bg-logo-gold shrink-0" />
                                     <span className="flex-1">{renderTextWithBold(item)}</span>
                                   </li>
@@ -417,7 +422,7 @@ export default function ArticleDetail() {
                             <p
                               key={i}
                               className={`leading-relaxed mb-5 font-body text-jet/70 ${
-                                i === 0 ? 'text-base md:text-lg text-jet/80 font-medium' : 'text-sm md:text-base'
+                                i === 0 ? 'text-base sm:text-lg text-jet/80 font-medium' : 'text-base text-jet/70'
                               }`}
                             >
                               {renderTextWithBold(block.text)}
@@ -452,10 +457,10 @@ export default function ArticleDetail() {
                                     <motion.div
                                       initial={false}
                                       animate={{ height: isOpen ? 'auto' : 0, opacity: isOpen ? 1 : 0 }}
-                                      transition={{ duration: 0.25, ease: 'easeInOut' }}
+                                      transition={{ duration: 0.2, ease: 'easeOut' }}
                                       className="overflow-hidden"
                                     >
-                                      <div className="px-5 pb-5 pt-1 text-sm md:text-base text-jet/65 leading-relaxed font-body border-t border-black/5 bg-white">
+                                      <div className="px-5 pb-5 pt-1 text-base text-jet/65 leading-relaxed font-body border-t border-black/5 bg-white">
                                         {faq.answer}
                                       </div>
                                     </motion.div>
@@ -499,6 +504,8 @@ export default function ArticleDetail() {
                               src={r.image}
                               alt={r.title}
                               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                              loading="lazy"
+                              decoding="async"
                             />
                           </div>
                           <div className="p-4 flex flex-col flex-grow">
@@ -519,12 +526,11 @@ export default function ArticleDetail() {
                     </div>
                   </div>
                 )}
-              </motion.div>
             </article>
 
             {/* Sidebar */}
             <aside className="space-y-6">
-              <div className="sticky top-28 space-y-6">
+              <div className="space-y-6 lg:sticky lg:top-28">
                 {/* Quick Contact Form */}
                 <div className="bg-white rounded-2xl p-6 border border-black/6 shadow-sm">
                   <h3 className="font-display text-base font-bold text-jet mb-5 pb-3 border-b border-black/6">
@@ -537,39 +543,33 @@ export default function ArticleDetail() {
                       <p className="text-xs text-jet/55 mt-1">We'll get back to you within 24 hours.</p>
                     </div>
                   ) : (
-                    <form className="space-y-4" onSubmit={handleQuickContact}>
+                    <form ref={quickContactFormRef} className="space-y-4" onSubmit={handleQuickContact}>
                       <div>
                         <input
                           type="text"
+                          name="name"
                           placeholder="Name"
                           required
-                          value={qcName}
-                          onChange={(e) => setQcName(e.target.value)}
                           className="w-full px-4 py-3 rounded-xl border border-black/10 bg-[#F4F4F4] text-sm font-poppins focus:outline-none focus:border-logo-gold focus:bg-white transition-colors placeholder:text-jet/40"
                         />
                       </div>
                       <div>
                         <input
                           type="tel"
+                          name="phone"
                           placeholder="Phone Number"
                           required
                           maxLength={10}
                           pattern="[0-9]{10}"
                           title="Please enter a 10-digit phone number"
-                          value={qcPhone}
-                          onChange={(e) => {
-                            const cleaned = e.target.value.replace(/[^0-9]/g, '').slice(0, 10);
-                            setQcPhone(cleaned);
-                          }}
                           className="w-full px-4 py-3 rounded-xl border border-black/10 bg-[#F4F4F4] text-sm font-poppins focus:outline-none focus:border-logo-gold focus:bg-white transition-colors placeholder:text-jet/40"
                         />
                       </div>
                       <div>
                         <input
                           type="email"
+                          name="email"
                           placeholder="Email Address (optional)"
-                          value={qcEmail}
-                          onChange={(e) => setQcEmail(e.target.value)}
                           className="w-full px-4 py-3 rounded-xl border border-black/10 bg-[#F4F4F4] text-sm font-poppins focus:outline-none focus:border-logo-gold focus:bg-white transition-colors placeholder:text-jet/40"
                         />
                       </div>
@@ -601,6 +601,8 @@ export default function ArticleDetail() {
                             src={r.image}
                             alt={r.title}
                             className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                            loading="lazy"
+                            decoding="async"
                           />
                         </div>
                         <div className="flex-1 min-w-0">

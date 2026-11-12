@@ -39,6 +39,12 @@ body {
   font-family: var(--font-poppins);
 }
 
+.article-content p {
+  text-align: justify;
+  text-justify: inter-word;
+  hyphens: auto;
+}
+
 .glass {
   background: rgba(255, 255, 255, 0.75);
   backdrop-filter: blur(12px);

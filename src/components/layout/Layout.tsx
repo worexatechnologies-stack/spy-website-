@@ -3,57 +3,72 @@ import { useEffect, useRef } from 'react';
 import Navbar from './Navbar';
 import Footer from './Footer';
 import WhatsAppButton from '../ui/WhatsAppButton';
-import Lenis from 'lenis';
-import gsap from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
-
-gsap.registerPlugin(ScrollTrigger);
+import type Lenis from 'lenis';
 
 export default function Layout() {
   const { pathname } = useLocation();
   const lenisRef = useRef<Lenis | null>(null);
 
   useEffect(() => {
-    // Initialize Lenis smooth scrolling
-    const lenis = new Lenis({
-      duration: 1.2,
-      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
-      orientation: 'vertical',
-      gestureOrientation: 'vertical',
-      smoothWheel: true,
-      touchMultiplier: 1.2,
-    });
-    lenisRef.current = lenis;
+    if (window.matchMedia('(max-width: 767px), (pointer: coarse)').matches) {
+      return;
+    }
 
-    // Connect Lenis to GSAP ScrollTrigger
-    lenis.on('scroll', ScrollTrigger.update);
+    let disposed = false;
+    let lenis: Lenis | null = null;
+    let gsap: typeof import('gsap').default | null = null;
+    let onTick: ((time: number) => void) | null = null;
 
-    // Drive Lenis updates using GSAP's central RAF ticker
-    const onTick = (time: number) => {
-      lenis.raf(time * 1000);
-    };
-    gsap.ticker.add(onTick);
-    gsap.ticker.lagSmoothing(0);
-
-    // Smooth scroll for anchor links with hash
     const handleAnchorClick = (e: MouseEvent) => {
       const target = (e.target as HTMLElement).closest('a');
       if (!target) return;
       const href = target.getAttribute('href');
       if (href && href.startsWith('#') && href.length > 1) {
         const el = document.querySelector(href);
-        if (el) {
+        if (el && lenis) {
           e.preventDefault();
           lenis.scrollTo(el as HTMLElement, { offset: -70 });
         }
       }
     };
-    document.addEventListener('click', handleAnchorClick);
+
+    const initializeSmoothScroll = async () => {
+      const [{ default: LenisConstructor }, { default: gsapInstance }, { ScrollTrigger }] =
+        await Promise.all([
+          import('lenis'),
+          import('gsap'),
+          import('gsap/ScrollTrigger'),
+        ]);
+      if (disposed) return;
+
+      gsapInstance.registerPlugin(ScrollTrigger);
+      gsap = gsapInstance;
+      lenis = new LenisConstructor({
+        duration: 1.2,
+        easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+        orientation: 'vertical',
+        gestureOrientation: 'vertical',
+        smoothWheel: true,
+        touchMultiplier: 1.2,
+      });
+      lenisRef.current = lenis;
+      lenis.on('scroll', ScrollTrigger.update);
+
+      onTick = (time) => lenis?.raf(time * 1000);
+      gsap.ticker.add(onTick);
+      gsap.ticker.lagSmoothing(0);
+      document.addEventListener('click', handleAnchorClick);
+    };
+
+    void initializeSmoothScroll().catch((error: unknown) => {
+      console.error('Failed to initialize smooth scrolling:', error);
+    });
 
     return () => {
+      disposed = true;
       document.removeEventListener('click', handleAnchorClick);
-      gsap.ticker.remove(onTick);
-      lenis.destroy();
+      if (gsap && onTick) gsap.ticker.remove(onTick);
+      lenis?.destroy();
       lenisRef.current = null;
     };
   }, []);

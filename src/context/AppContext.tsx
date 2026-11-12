@@ -41,7 +41,7 @@ const BLOG_STORAGE_VERSION_KEY = 'aegis_blogs_version';
 const TESTIMONIAL_STORAGE_KEY = 'aegis_testimonials';
 const TESTIMONIAL_STORAGE_VERSION_KEY = 'aegis_testimonials_version';
 const CURRENT_SERVICE_STORAGE_VERSION = '9';
-const CURRENT_BLOG_STORAGE_VERSION = '76';
+const CURRENT_BLOG_STORAGE_VERSION = '80';
 const CURRENT_TESTIMONIAL_STORAGE_VERSION = '2';
 
 function loadFromStorage<T>(key: string, fallback: T): T {
