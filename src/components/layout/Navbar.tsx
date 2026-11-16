@@ -70,6 +70,7 @@ export default function Navbar() {
             <img
               src="/images/spy-sense-logo2.png"
               alt="SPY SENSE logo"
+              decoding="async"
               className="h-12 sm:h-14 w-auto object-contain transition-transform duration-300 group-hover:scale-105"
             />
           </Link>

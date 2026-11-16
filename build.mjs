@@ -13,7 +13,30 @@ execSync('npx tsc -b --pretty false', { stdio: 'inherit' });
 await build({
   configFile: false,
   plugins: [react(), tailwindcss()],
-  build: { outDir: 'dist', emptyOutDir: true },
+  build: {
+    outDir: 'dist',
+    emptyOutDir: true,
+    cssCodeSplit: true,
+    chunkSizeWarningLimit: 600,
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes('initialData')) {
+            return 'initial-data';
+          }
+          if (id.includes('node_modules/framer-motion')) {
+            return 'vendor-motion';
+          }
+          if (id.includes('node_modules/lucide-react')) {
+            return 'vendor-icons';
+          }
+          if (id.includes('node_modules/react') || id.includes('node_modules/react-dom') || id.includes('node_modules/react-router-dom')) {
+            return 'vendor-react';
+          }
+        },
+      },
+    },
+  },
 });
 
 // Copy PHP backend files into dist/ so they are served alongside the React app on cPanel

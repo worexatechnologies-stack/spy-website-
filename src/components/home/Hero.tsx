@@ -47,9 +47,9 @@ export default function Hero() {
 
             {/* Headline */}
             <motion.h1
-              initial={{ opacity: 0, y: 28 }}
+              initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.7, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
+              transition={{ duration: 0.4, delay: 0.05, ease: [0.16, 1, 0.3, 1] }}
               className="mb-5 font-display text-3xl sm:text-5xl lg:text-5xl xl:text-6xl font-bold leading-[1.12] tracking-tight text-[#0B0B0B]"
             >
               Beyond{' '}
@@ -59,7 +59,7 @@ export default function Hero() {
                 <motion.span
                   initial={{ scaleX: 0 }}
                   animate={{ scaleX: 1 }}
-                  transition={{ duration: 0.55, delay: 0.9, ease: [0.16, 1, 0.3, 1] }}
+                  transition={{ duration: 0.45, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
                   style={{ originX: 0 }}
                   className="absolute -bottom-1 left-0 right-0 h-[3px] rounded-full bg-logo-gold"
                 />
@@ -68,9 +68,9 @@ export default function Hero() {
 
             {/* Description */}
             <motion.p
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.65, delay: 0.2 }}
+              transition={{ duration: 0.4, delay: 0.08 }}
               className="mb-8 max-w-xl text-base sm:text-lg leading-relaxed text-black/60 font-body"
             >
               Every decision requires more than just faith; it requires verification. Our agency offers background verification, information gathering, and investigation services in total secrecy and accuracy. Because the truth lies in the details.
@@ -78,9 +78,9 @@ export default function Hero() {
 
             {/* Service badges */}
             <motion.div
-              initial={{ opacity: 0, y: 16 }}
+              initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.55, delay: 0.3 }}
+              transition={{ duration: 0.35, delay: 0.12 }}
               className="mb-8 flex flex-wrap gap-2.5"
             >
               {services.map(({ icon: Icon, label }) => (
@@ -98,9 +98,9 @@ export default function Hero() {
 
             {/* Action buttons */}
             <motion.div
-              initial={{ opacity: 0, y: 18 }}
+              initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.55, delay: 0.4 }}
+              transition={{ duration: 0.35, delay: 0.15 }}
               className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3.5"
             >
               <Link
@@ -137,6 +137,9 @@ export default function Hero() {
                 <img
                   src="/images/hero.jpg"
                   alt="Professional detective in trench coat"
+                  loading="eager"
+                  fetchPriority="high"
+                  decoding="async"
                   className="w-full aspect-[4/3] sm:aspect-[4/3] lg:aspect-[4/5] object-cover object-top filter contrast-[1.02] hover:scale-102 transition-transform duration-700"
                 />
 

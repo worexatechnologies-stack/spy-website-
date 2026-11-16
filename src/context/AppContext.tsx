@@ -41,7 +41,7 @@ const BLOG_STORAGE_VERSION_KEY = 'aegis_blogs_version';
 const TESTIMONIAL_STORAGE_KEY = 'aegis_testimonials';
 const TESTIMONIAL_STORAGE_VERSION_KEY = 'aegis_testimonials_version';
 const CURRENT_SERVICE_STORAGE_VERSION = '9';
-const CURRENT_BLOG_STORAGE_VERSION = '80';
+const CURRENT_BLOG_STORAGE_VERSION = '85';
 const CURRENT_TESTIMONIAL_STORAGE_VERSION = '2';
 
 function loadFromStorage<T>(key: string, fallback: T): T {
@@ -74,10 +74,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
     if (storedVersion !== CURRENT_BLOG_STORAGE_VERSION) {
       localStorage.setItem(BLOG_STORAGE_VERSION_KEY, CURRENT_BLOG_STORAGE_VERSION);
+      localStorage.setItem(BLOG_STORAGE_KEY, JSON.stringify(initialBlogs));
       return initialBlogs;
     }
 
-    return storedBlogs;
+    // Ensure built-in articles always reflect the latest code definitions from initialBlogs
+    const initialIds = new Set(initialBlogs.map((b) => b.id));
+    const customAdminBlogs = storedBlogs.filter((b) => !initialIds.has(b.id));
+    return [...initialBlogs, ...customAdminBlogs];
   });
   const [testimonials, setTestimonials] = useState<Testimonial[]>(() => {
     const storedVersion = localStorage.getItem(TESTIMONIAL_STORAGE_VERSION_KEY);

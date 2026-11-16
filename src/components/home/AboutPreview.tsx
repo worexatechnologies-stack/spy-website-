@@ -56,6 +56,8 @@ export default function AboutPreview() {
               <img
                 src="/images/image7.jpg"
                 alt="Spy Sense investigation office"
+                loading="lazy"
+                decoding="async"
                 className="w-full aspect-[4/5] object-cover"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
